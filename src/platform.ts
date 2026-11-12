@@ -80,7 +80,24 @@ export async function importFromFolder(cameraId: string): Promise<ImportResult |
   return readSources(sources, cameraId);
 }
 
-function download(blob: Blob, name: string) {
+/** Inside the hosted preview page, saving goes through the host; it only accepts some file types. */
+async function hostSave(blob: Blob, name: string): Promise<boolean> {
+  const use = (window as any).claude?.use;
+  if (typeof use !== 'function') return false;
+  const downloads = await use('downloads');
+  if (!downloads) return false;
+  try {
+    await downloads.save({ filename: name, data: blob });
+  } catch (e: any) {
+    if (e?.code === 'declined') return true;
+    if (e?.code === 'rejected_extension') throw new Error('this preview page can only save the .zip, .csv and .json. Use "Save all as one .zip", or "Show as text" to copy');
+    throw new Error(e?.message ?? 'saving is unavailable here');
+  }
+  return true;
+}
+
+async function download(blob: Blob, name: string) {
+  if (await hostSave(blob, name)) return;
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = name;
@@ -104,7 +121,7 @@ export async function saveFile(f: ExportFile): Promise<void> {
       }
     }
   }
-  download(blob, f.name);
+  await download(blob, f.name);
 }
 
 export async function saveZip(files: ExportFile[], name: string): Promise<void> {
@@ -120,7 +137,7 @@ export async function saveZip(files: ExportFile[], name: string): Promise<void> 
       }
     }
   }
-  download(blob, name);
+  await download(blob, name);
 }
 
 /** Write every file into a "ContentSync" folder inside a folder the user picks (e.g. the SD card). */
