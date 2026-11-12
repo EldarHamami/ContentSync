@@ -127,7 +127,7 @@ function Home({ onOpen }: { onOpen: (s: Session, v: View) => void }) {
 
       <section class="card">
         <h2>Continue on this device</h2>
-        <p class="muted small">Marked on your phone and editing on a computer? Save a session backup on the phone (Footage &amp; export), send it to yourself, and open it here.</p>
+        <p class="muted small">Marked on your phone and editing on a computer? Save a session backup on the phone (Footage), send it to yourself, and open it here.</p>
         <label class="btn">
           Open a session backup
           <input id="import-backup" type="file" onChange={(e) => importBackup((e.target as HTMLInputElement).files)} />

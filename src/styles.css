@@ -1,16 +1,19 @@
-/* Layout: one quiet near-black column; the red mark button is the only loud thing on screen. */
+/* Layout: one quiet near-black column; black and gold; the gold mark button is the only loud thing on screen. */
 :root {
-  --bg: #0a0a0b;
-  --surface: #141416;
-  --raised: #1e1e21;
-  --line: rgba(255, 255, 255, 0.08);
-  --fg: #f5f5f7;
-  --muted: #8a8a90;
+  --bg: #060606;
+  --surface: #111110;
+  --raised: #1b1a18;
+  --line: rgba(233, 189, 91, 0.14);
+  --fg: #f6f1e6;
+  --muted: #8f887a;
   --rec: #ff453a;
   --rec-deep: #c92a21;
   --rec-ink: #ffffff;
-  --accent: #f5f5f7;
-  --accent-ink: #0a0a0b;
+  --gold: #e9bd5b;
+  --gold-hi: #f8e3a1;
+  --gold-deep: #b98a2c;
+  --accent: #e9bd5b;
+  --accent-ink: #120d02;
   --ok: #30d158;
   --warn: #ffd60a;
   --tag-green: #30d158;
@@ -42,7 +45,8 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 /* Installed app: we own the whole screen, so clear the status bar and home indicator ourselves. */
 .standalone .page { padding-top: calc(12px + env(safe-area-inset-top, 0px)); padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px)); }
 
-h1 { font-size: 1.9rem; font-weight: 700; margin: 0; letter-spacing: -0.03em; text-wrap: balance; }
+h1 { font-size: 2.2rem; font-weight: 800; margin: 0; letter-spacing: -0.04em; text-wrap: balance;
+  background: linear-gradient(100deg, var(--gold-hi), var(--gold) 45%, var(--gold-deep)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 h2 { font-size: 1.05rem; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
 p { margin: 0; }
 .muted { color: var(--muted); }
@@ -51,19 +55,19 @@ p { margin: 0; }
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .row > .grow { flex: 1; min-width: 0; }
 .stack { display: flex; flex-direction: column; gap: 8px; }
-.card { background: var(--surface); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-.label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.card { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); opacity: 0.85; }
 
 button, .btn {
-  font: inherit; font-weight: 500; color: var(--fg); background: var(--raised); border: 0; border-radius: 14px;
-  padding: 12px 16px; min-height: 48px; cursor: pointer; position: relative;
+  font: inherit; font-weight: 500; color: var(--fg); background: var(--raised); border: 0; border-radius: 999px;
+  padding: 12px 20px; min-height: 48px; cursor: pointer; position: relative;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-align: center;
   transition: opacity 120ms, transform 120ms;
 }
 button:active, .btn:active { opacity: 0.6; }
-button:focus-visible, .btn:focus-within, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+button:focus-visible, .btn:focus-within, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 button:disabled { opacity: 0.35; cursor: default; }
-button.primary { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+button.primary { background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, var(--gold-deep)); color: var(--accent-ink); font-weight: 700; letter-spacing: 0.01em; }
 button.ghost { background: transparent; box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); }
 button.quiet { background: transparent; color: var(--muted); padding: 6px 4px; min-height: 40px; min-width: 40px; }
 button.danger { color: var(--rec); }
@@ -73,35 +77,36 @@ input[type='text'], input[type='number'], select, textarea {
   padding: 12px 14px; min-height: 48px; width: 100%; min-width: 0; -webkit-appearance: none; appearance: none;
 }
 input::placeholder { color: var(--muted); opacity: 0.7; }
-.seg { display: inline-flex; background: var(--raised); border-radius: 12px; padding: 3px; gap: 2px; }
-.seg button { background: transparent; border-radius: 9px; min-height: 38px; min-width: 46px; padding: 4px 12px; color: var(--muted); }
-.seg button[aria-pressed='true'] { background: var(--fg); color: var(--accent-ink); font-weight: 600; }
+.seg { display: inline-flex; background: var(--raised); border-radius: 999px; padding: 3px; gap: 2px; }
+.seg button { background: transparent; border-radius: 999px; min-height: 38px; min-width: 46px; padding: 4px 12px; color: var(--muted); }
+.seg button[aria-pressed='true'] { background: var(--gold); color: var(--accent-ink); font-weight: 700; }
 
 /* Mark screen */
 .topbar { display: flex; align-items: center; gap: 10px; min-height: 40px; }
-.topbar .title { flex: 1; min-width: 0; font-weight: 600; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar .title { color: var(--fg); flex: 1; min-width: 0; font-weight: 600; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .clock { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 0.95rem; color: var(--muted); }
 .stage { display: flex; flex-direction: column; align-items: center; gap: 18px; padding-block: 12px 4px; }
 .markbtn {
   width: min(64vw, 260px); height: min(64vw, 260px); min-height: 0; padding: 0; border-radius: 50%;
-  background: radial-gradient(circle at 50% 35%, var(--rec), var(--rec-deep)); color: var(--rec-ink);
-  font-size: 1.5rem; font-weight: 700; letter-spacing: 0.16em; text-indent: 0.16em;
-  box-shadow: 0 0 0 10px rgba(255, 69, 58, 0.1), 0 24px 60px -18px rgba(255, 69, 58, 0.55);
+  background: radial-gradient(circle at 50% 28%, var(--gold-hi), var(--gold) 45%, var(--gold-deep)); color: var(--accent-ink);
+  font-size: 1.5rem; font-weight: 800; letter-spacing: 0.2em; text-indent: 0.2em;
+  box-shadow: 0 0 0 1px rgba(248, 227, 161, 0.5), 0 0 0 11px rgba(233, 189, 91, 0.08), 0 0 90px -10px rgba(233, 189, 91, 0.45);
   transition: transform 90ms ease-out; touch-action: manipulation;
 }
 .markbtn:active { opacity: 1; transform: scale(0.955); }
-.markbtn::after { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 2px solid var(--rec); opacity: 0; pointer-events: none; }
+.markbtn::after { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 2px solid var(--gold); opacity: 0; pointer-events: none; }
 .markbtn.hit::after { animation: ring 520ms ease-out; }
 @keyframes ring { from { opacity: 0.7; transform: scale(1); } to { opacity: 0; transform: scale(1.22); } }
 .count { font-size: 0.9rem; color: var(--muted); min-height: 1.4em; font-variant-numeric: tabular-nums; }
 .count b { color: var(--fg); font-weight: 600; }
 .tags { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.tag { min-height: 54px; justify-content: flex-start; background: var(--surface); padding-inline: 16px; }
+.tag { min-height: 54px; justify-content: flex-start; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); padding-inline: 18px; }
+.c-red { --c: var(--gold); }
 .tag.hit { animation: tagflash 420ms ease-out; }
 @keyframes tagflash { from { background: color-mix(in srgb, var(--c) 40%, var(--surface)); } to { background: var(--surface); } }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
 .c-green { --c: var(--tag-green); } .c-purple { --c: var(--tag-purple); } .c-blue { --c: var(--tag-blue); }
-.c-yellow { --c: var(--tag-yellow); } .c-red { --c: var(--tag-red); }
+.c-yellow { --c: var(--tag-yellow); }
 @media (prefers-reduced-motion: reduce) { .markbtn, button, .btn { transition: none; } .markbtn.hit::after, .tag.hit { animation: none; } }
 .marks { display: flex; flex-direction: column; }
 .mark { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 0; }
@@ -120,8 +125,8 @@ input::placeholder { color: var(--muted); opacity: 0.7; }
 .timeline { display: flex; flex-direction: column; gap: 8px; }
 .lane { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 10px; align-items: center; }
 .track { position: relative; height: 22px; background: var(--raised); border-radius: 6px; overflow: hidden; }
-.track .clip { position: absolute; top: 0; bottom: 0; background: rgba(245, 245, 247, 0.28); border-radius: 4px; min-width: 2px; }
-.track .tick { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--c, var(--rec)); }
+.track .clip { position: absolute; top: 0; bottom: 0; background: rgba(233, 189, 91, 0.45); border-radius: 4px; min-width: 2px; }
+.track .tick { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--c, var(--fg)); }
 .cliprow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 0; font-size: 0.9rem; }
 .cliprow + .cliprow { border-top: 1px solid var(--line); }
 .pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 10px; font-size: 0.75rem; font-weight: 500; background: var(--raised); color: var(--muted); white-space: nowrap; }
@@ -136,6 +141,6 @@ input::placeholder { color: var(--muted); opacity: 0.7; }
 .exports { display: flex; flex-direction: column; }
 .export { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .export + .export { border-top: 1px solid var(--line); }
-.export > button:first-child { background: transparent; border-radius: 0; justify-content: flex-start; text-align: left; flex-direction: column; align-items: flex-start; gap: 0; padding: 12px 0; }
+.export > button:first-child { background: transparent; border-radius: 0; padding-inline: 0; justify-content: flex-start; text-align: left; flex-direction: column; align-items: flex-start; gap: 0; padding: 12px 0; }
 ol.steps { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 8px; }
 textarea.copy { min-height: 180px; font-family: var(--mono); font-size: 12px; }

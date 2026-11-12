@@ -100,7 +100,7 @@ export function MarkScreen({ session, update, onHome, onFootage }: Props) {
 
       <div class="row">
         <button class="grow" onClick={() => setSlate(true)}>Sync slate</button>
-        <button class="grow primary" onClick={onFootage}>Footage &amp; export</button>
+        <button class="grow primary" onClick={onFootage}>Footage</button>
       </div>
       {!awake && <p class="muted small">Your screen may dim while you listen. Marks are saved either way.</p>}
 
