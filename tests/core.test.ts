@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { decodeLtc, mediaNameFromSource, parseSonyDate, parseSonyXml } from '../src/core/sony';
 import { framesToTc, framesToTcString, parseSonyFps, tcToFrames, framesToMs } from '../src/core/timecode';
-import { calibrateOffset, computeTimings, placeMarkers } from '../src/core/sync';
+import { applyTcAnchors, calibrateOffset, computeTimings, offsetFromTcAnchor, placeMarkers } from '../src/core/sync';
 import { buildPlans } from '../src/core/plan';
 import { extractSonyXmlFromMp4 } from '../src/core/mp4';
 import type { Clip, Marker, Session } from '../src/core/types';
@@ -148,6 +148,25 @@ describe('sync', () => {
     expect(off).toBeCloseTo(3500, 5);
     s.cameras[0].clockOffsetMs = off;
     expect(computeTimings(s)[0].clips[0].startMs).toBeCloseTo(t0 + 500 - 3500, 5);
+  });
+
+  it('syncs a camera from a snapshot of its timecode display', () => {
+    // Clip starts at TC 10:14:15:00; camera clock is 4 s behind the phone.
+    const a = clip25('a', 'C0001M01.XML', t0, 25 * 600, '00151410');
+    const s = session([a], []);
+    const realStart = t0 + 500 + 4000;
+    // 20 s into the clip the display reads 10:14:35:00.
+    const r = offsetFromTcAnchor(s, 'a', { phoneMs: realStart + 20000, tc: '10:14:35:00' });
+    expect('offsetMs' in r && Math.round(r.offsetMs)).toBe(-4000);
+    expect('error' in offsetFromTcAnchor(s, 'a', { phoneMs: realStart, tc: '11:00:00:00' })).toBe(true);
+    s.cameras[0].tcAnchor = { phoneMs: realStart + 20000, tc: '10:14:35:00' };
+    const applied = applyTcAnchors(s);
+    expect(applied.cameras[0].calibrated).toBe(true);
+    expect(computeTimings(applied)[0].clips[0].startMs).toBeCloseTo(realStart, 3);
+    // 50p file, camera display in 25 base: 2 file frames per label.
+    const b = parseSonyXml(sidecar({ duration: 50 * 600, tcFps: 25, halfStep: true, start: '00151410', created: iso(t0), fps: '50p' }), 'C0002M01.XML', 'b');
+    const r2 = offsetFromTcAnchor(session([b], []), 'b', { phoneMs: realStart + 20000, tc: '10:14:35:00' });
+    expect('offsetMs' in r2 && Math.round(r2.offsetMs)).toBe(-4000);
   });
 
   it('lays two cameras out in sync and never overlaps one camera with itself', () => {

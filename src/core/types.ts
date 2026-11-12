@@ -36,6 +36,8 @@ export interface Camera {
   clockOffsetMs: number;
   /** True once the user has calibrated against the sync slate. */
   calibrated: boolean;
+  /** A snapshot of the camera's running timecode: at phone time `phoneMs` its display read `tc`. */
+  tcAnchor?: { phoneMs: number; tc: string };
   /** Optional folder where this camera's media will live on the edit machine. */
   mediaPath: string;
 }

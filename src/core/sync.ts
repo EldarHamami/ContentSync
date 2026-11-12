@@ -4,7 +4,7 @@
 // start (1 s resolution). Per camera we keep one number: how far its clock is from the phone's.
 // When the camera runs free-run timecode we additionally use the timecode to position that
 // camera's clips relative to each other with frame precision.
-import { fps, framesToMs, msToFrames, sameRate, tcToFrames, type Rate } from './timecode';
+import { fps, framesToMs, msToFrames, parseTc, sameRate, tcToFrames, type Rate } from './timecode';
 import { markerTime, type Camera, type Clip, type Marker, type Session } from './types';
 
 export interface ClipTiming {
@@ -130,9 +130,44 @@ export function calibrateOffset(session: Session, clip: Clip, frameInClip: numbe
   return camera.clockOffsetMs + (timing.startMs - wantedStart);
 }
 
+/**
+ * Sync a camera from a snapshot of its timecode display taken at a known phone time.
+ * Works when the camera was recording at that moment, or when its timecode is free run.
+ */
+export function offsetFromTcAnchor(session: Session, cameraId: string, anchor: { phoneMs: number; tc: string }): { offsetMs: number } | { error: string } {
+  const tc = parseTc(anchor.tc);
+  if (!tc) return { error: 'Type the timecode like 01:23:45:10' };
+  const cam = computeTimings(session).find((c) => c.camera.id === cameraId);
+  const clips = (cam?.clips ?? []).filter((t) => !t.clip.slowQuick);
+  if (!cam || clips.length === 0) return { error: 'Add this camera\'s clips first' };
+  let best: { clip: Clip; frame: number; dist: number } | null = null;
+  for (const t of clips) {
+    // The camera display counts in its own base (24/25/30); files may run 2x or 4x that.
+    const frame = tcToFrames(tc, t.clip.tcBase, t.clip.dropFrame) * t.clip.k - t.clip.startFrameFull;
+    const dist = frame < 0 ? -frame : Math.max(0, frame - (t.clip.durationFrames - 1));
+    if (!best || dist < best.dist) best = { clip: t.clip, frame, dist };
+  }
+  if (!best) return { error: 'No usable clip' };
+  if (best.dist > 0 && !cam.freeRun) {
+    return { error: 'That timecode is not inside any clip. Take the snapshot while the camera is recording, or set the camera to Free Run timecode.' };
+  }
+  return { offsetMs: calibrateOffset(session, best.clip, best.frame, anchor.phoneMs) };
+}
+
+/** Apply every stored timecode snapshot that can be resolved against the loaded clips. */
+export function applyTcAnchors(session: Session): Session {
+  let s = session;
+  for (const cam of session.cameras) {
+    if (!cam.tcAnchor) continue;
+    const r = offsetFromTcAnchor(s, cam.id, cam.tcAnchor);
+    if ('offsetMs' in r) s = { ...s, cameras: s.cameras.map((c) => (c.id === cam.id ? { ...c, clockOffsetMs: r.offsetMs, calibrated: true } : c)) };
+  }
+  return s;
+}
+
 export function describeAccuracy(cam: CameraTiming): string {
   if (cam.clips.length === 0) return 'No clips yet';
-  if (cam.camera.calibrated) return cam.freeRun ? 'Slate-synced, free-run timecode: about 1-2 frames' : 'Slate-synced: within about 1 second';
+  if (cam.camera.calibrated) return cam.freeRun ? 'Synced, free-run timecode: a few frames' : 'Synced on one clip: that clip to a few frames, others within about 1 second';
   return 'Camera clock: within a second or two if the camera clock matches your phone';
 }
 

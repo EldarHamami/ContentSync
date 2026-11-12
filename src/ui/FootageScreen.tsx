@@ -3,7 +3,7 @@ import { buildPlans } from '../core/plan';
 import { buildExports, type ExportFile } from '../core/exports';
 import { safeFileName } from '../core/exports/xml';
 import { friendlyModel } from '../core/sony';
-import { calibrateOffset, describeAccuracy, type CameraTiming } from '../core/sync';
+import { applyTcAnchors, calibrateOffset, describeAccuracy, type CameraTiming } from '../core/sync';
 import { framesToMs, formatElapsed, rateLabel } from '../core/timecode';
 import { markerTime, type Camera, type Clip, type Session } from '../core/types';
 import { canPickFolder, importFromFiles, importFromFolder, isAppleTouch, saveFile, saveToFolder, saveZip, type ImportResult } from '../platform';
@@ -32,7 +32,7 @@ export function FootageScreen({ session, update, onBack, onHome }: Props) {
     const key = (c: Clip) => `${c.cameraId}|${c.fileName}|${c.creationMs}`;
     const seen = new Set(session.clips.map(key));
     const fresh = r.clips.filter((c) => !seen.has(key(c)) && seen.add(key(c)));
-    update({ ...session, clips: [...session.clips, ...fresh] });
+    update(applyTcAnchors({ ...session, clips: [...session.clips, ...fresh] }));
     const cam = session.cameras.find((c) => c.id === cameraId)?.label ?? 'camera';
     const parts = [`Added ${fresh.length} clip${fresh.length === 1 ? '' : 's'} to ${cam}.`];
     if (r.clips.length > fresh.length) parts.push(`${r.clips.length - fresh.length} were already there.`);
@@ -211,7 +211,7 @@ function CameraCard(p: {
       setBusy(false);
     }
   };
-  const nudge = (ms: number) => p.onChange({ clockOffsetMs: c.clockOffsetMs + ms, calibrated: false });
+  const nudge = (ms: number) => p.onChange({ clockOffsetMs: c.clockOffsetMs + ms, calibrated: false, tcAnchor: undefined });
 
   return (
     <section class="card">
@@ -234,7 +234,7 @@ function CameraCard(p: {
             <span class="label">Camera clock</span>
             <div class="row">
               <span class="grow">{offsetText(c.clockOffsetMs)}</span>
-              <span class={`pill ${c.calibrated ? 'ok' : ''}`}>{c.calibrated ? 'Slate-synced' : cam.freeRun ? 'Free-run timecode' : 'Camera clock'}</span>
+              <span class={`pill ${c.calibrated ? 'ok' : ''}`}>{c.calibrated ? 'Synced' : cam.freeRun ? 'Free-run timecode' : 'Camera clock'}</span>
             </div>
             <p class="muted small">{describeAccuracy(cam)}</p>
             <div class="grid4">

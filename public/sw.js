@@ -1,5 +1,5 @@
 // Offline support: serve the app from cache, refresh the cache in the background when online.
-const CACHE = 'contentsync-v3';
+const CACHE = 'contentsync-v4';
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './manifest.webmanifest', './icon.svg', './icon-192.png'])));
   self.skipWaiting();

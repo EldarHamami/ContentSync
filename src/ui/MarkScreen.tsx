@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { markerTime, uid, type Marker, type Session } from '../core/types';
 import { buzz, keepAwake } from '../platform';
+import { SyncSheet } from './SyncSheet';
 
 interface Props {
   session: Session;
@@ -19,6 +20,7 @@ export function MarkScreen({ session, update, onHome, onFootage }: Props) {
   const [now, setNow] = useState(Date.now());
   const [awake, setAwake] = useState(false);
   const [slate, setSlate] = useState(false);
+  const [sync, setSync] = useState(false);
   const [hit, setHit] = useState<{ key: string; n: number }>({ key: '', n: 0 });
   const downAt = useRef(0);
   const latest = useRef(session);
@@ -99,7 +101,7 @@ export function MarkScreen({ session, update, onHome, onFootage }: Props) {
       </div>
 
       <div class="row">
-        <button class="grow" onClick={() => setSlate(true)}>Sync slate</button>
+        <button class="grow" onClick={() => setSync(true)}>Sync cameras</button>
         <button class="grow primary" onClick={onFootage}>Footage</button>
       </div>
       {!awake && <p class="muted small">Your screen may dim while you listen. Marks are saved either way.</p>}
@@ -121,6 +123,7 @@ export function MarkScreen({ session, update, onHome, onFootage }: Props) {
           </div>
         </section>
       )}
+      {sync && <SyncSheet session={session} update={update} onClose={() => setSync(false)} onSlate={() => { setSync(false); setSlate(true); }} />}
       {slate && <Slate onClose={() => setSlate(false)} cameras={session.cameras.map((c) => c.label)} />}
     </div>
   );

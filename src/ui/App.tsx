@@ -145,7 +145,7 @@ function Home({ onOpen }: { onOpen: (s: Session, v: View) => void }) {
         <h2>How it works</h2>
         <ol class="steps muted small">
           <li>Set each camera's clock to match your phone (Sony Creators' App does this, or set it by hand).</li>
-          <li>Optional, for frame accuracy: open the sync slate and film it for three seconds with each camera.</li>
+          <li>For tight sync: tap Sync cameras, point your phone at each camera's screen while it records, freeze, and type the timecode you see.</li>
           <li>During the interview, tap MARK or a tag. The app saves the exact moment, minus a few seconds of look-back.</li>
           <li>Afterwards, give the app the small XML files Sony writes next to each clip on the card. It places every mark on the right clip and frame.</li>
           <li>Export an XML for Premiere Pro, DaVinci Resolve or Final Cut Pro, and save it next to the footage.</li>
