@@ -65,7 +65,7 @@ export function FootageScreen({ session, update, onBack, onHome }: Props) {
   return (
     <div class="page">
       <div class="topbar">
-        <button class="quiet" onClick={onBack}>‹ Mark</button>
+        <button class="quiet" onClick={onBack} aria-label="Back to marking">‹</button>
         <span class="title" dir="auto">{session.name}</span>
         <button class="quiet" onClick={onHome}>Shoots</button>
       </div>
@@ -116,12 +116,12 @@ export function FootageScreen({ session, update, onBack, onHome }: Props) {
         {!hasClips && <p class="muted small">Add clips first to get editor files. You can already save a session backup.</p>}
         <div class="exports">
           {files.filter((f) => hasClips || f.kind === 'session').map((f) => (
-            <div class="stack" key={f.name} style="gap:4px">
+            <div class="export" key={f.name}>
               <button onClick={() => run(() => saveFile(f))}>
-                <strong>{label[f.kind][0]}</strong>
+                <span>{label[f.kind][0]}</span>
                 <span class="muted small">{label[f.kind][1]}</span>
               </button>
-              <button class="quiet small" onClick={() => setShowing(f)}>Show as text</button>
+              <button class="quiet small" aria-label={`Show ${label[f.kind][0]} as text`} onClick={() => setShowing(f)}>Text</button>
             </div>
           ))}
         </div>
@@ -216,7 +216,7 @@ function CameraCard(p: {
   return (
     <section class="card">
       <div class="row">
-        <input id={`cam-${c.id}`} class="grow" type="text" dir="auto" value={c.label} aria-label="Camera name" style="font-weight:600;max-width:12em" onInput={(e) => p.onChange({ label: (e.target as HTMLInputElement).value })} />
+        <input id={`cam-${c.id}`} class="grow" type="text" dir="auto" value={c.label} aria-label="Camera name" style="font-weight:600;max-width:10em" onInput={(e) => p.onChange({ label: (e.target as HTMLInputElement).value })} />
         <span class="grow muted small">{models}{cam.clips.length ? ` · ${cam.clips.length} clip${cam.clips.length === 1 ? '' : 's'} · ${p.markerCount} mark${p.markerCount === 1 ? '' : 's'}` : ''}</span>
       </div>
       <div class="row">
@@ -237,7 +237,7 @@ function CameraCard(p: {
               <span class={`pill ${c.calibrated ? 'ok' : ''}`}>{c.calibrated ? 'Slate-synced' : cam.freeRun ? 'Free-run timecode' : 'Camera clock'}</span>
             </div>
             <p class="muted small">{describeAccuracy(cam)}</p>
-            <div class="row">
+            <div class="grid4">
               <button onClick={() => nudge(-1000)} aria-label="Camera clock 1 second earlier">−1 s</button>
               <button onClick={() => nudge(-100)} aria-label="Camera clock a tenth earlier">−0.1</button>
               <button onClick={() => nudge(100)} aria-label="Camera clock a tenth later">+0.1</button>

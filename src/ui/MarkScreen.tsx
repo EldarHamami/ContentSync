@@ -19,7 +19,8 @@ export function MarkScreen({ session, update, onHome, onFootage }: Props) {
   const [now, setNow] = useState(Date.now());
   const [awake, setAwake] = useState(false);
   const [slate, setSlate] = useState(false);
-  const [flash, setFlash] = useState(0);
+  const [hit, setHit] = useState<{ key: string; n: number }>({ key: '', n: 0 });
+  const downAt = useRef(0);
   const latest = useRef(session);
   latest.current = session;
 
@@ -36,13 +37,19 @@ export function MarkScreen({ session, update, onHome, onFootage }: Props) {
   }, []);
 
   // The timestamp is taken first, before anything else can delay it.
+  const press = () => {
+    downAt.current = Date.now();
+  };
   const mark = (tag: string, color: string) => {
-    const tapMs = Date.now();
+    const now = Date.now();
+    // Use the moment the finger went down, unless that was long ago (keyboard, stale touch).
+    const tapMs = now - downAt.current < 1500 ? downAt.current : now;
+    downAt.current = 0;
     const s = latest.current;
     const m: Marker = { id: uid(), tapMs, preRollMs: s.preRollMs, tag, color, note: '' };
     update({ ...s, markers: [...s.markers, m] });
     buzz();
-    setFlash((n) => n + 1);
+    setHit((h) => ({ key: tag || 'mark', n: h.n + 1 }));
     if (!awake) void keepAwake(true).then(setAwake);
   };
 
@@ -53,28 +60,35 @@ export function MarkScreen({ session, update, onHome, onFootage }: Props) {
 
   return (
     <div class="page">
-      <div key={flash} class={`flash ${flash ? 'on' : ''}`} />
       <div class="topbar">
-        <button class="quiet" onClick={onHome} aria-label="Back to shoots">‹ Shoots</button>
+        <button class="quiet" onClick={onHome} aria-label="Back to shoots">‹</button>
         <span class="title" dir="auto">{session.name}</span>
         <span class="clock" aria-label="Phone time">{clockText(now)}</span>
       </div>
 
-      <button class="markbtn" onPointerDown={(e) => { e.preventDefault(); mark('', 'red'); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mark('', 'red'); } }}>
-        MARK
-        <small>{session.markers.length === 0 ? 'Tap when something good happens' : `${session.markers.length} marked`}</small>
-      </button>
+      <div class="stage">
+        <button key={hit.key === 'mark' ? hit.n : 'mark'} class={`markbtn ${hit.key === 'mark' ? 'hit' : ''}`} aria-label="Mark this moment" onPointerDown={press} onClick={() => mark('', 'red')}>
+          MARK
+        </button>
+        <div class="count" role="status">
+          {session.markers.length === 0 ? 'Tap when something good happens' : <><b>{session.markers.length}</b> marked</>}
+        </div>
+      </div>
 
       <div class="tags">
         {session.tags.map((t) => (
-          <button key={t.label} class={`tag c-${t.color}`} onPointerDown={(e) => { e.preventDefault(); mark(t.label, t.color); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mark(t.label, t.color); } }}>
+          <button key={t.label + (hit.key === t.label ? hit.n : '')} class={`tag c-${t.color} ${hit.key === t.label ? 'hit' : ''}`} onPointerDown={press} onClick={() => mark(t.label, t.color)}>
+            <span class="dot" />
             {t.label}
           </button>
         ))}
       </div>
 
       <div class="row">
-        <span class="label grow">Look-back: marks land this long before your tap</span>
+        <div class="stack grow" style="gap:2px">
+          <span>Look-back</span>
+          <span class="muted small">Marks land this long before your tap</span>
+        </div>
         <div class="seg" role="group" aria-label="Look-back">
           {[0, 3, 5, 10].map((s) => (
             <button key={s} aria-pressed={session.preRollMs === s * 1000} onClick={() => update({ ...session, preRollMs: s * 1000 })}>
@@ -88,7 +102,7 @@ export function MarkScreen({ session, update, onHome, onFootage }: Props) {
         <button class="grow" onClick={() => setSlate(true)}>Sync slate</button>
         <button class="grow primary" onClick={onFootage}>Footage &amp; export</button>
       </div>
-      {!awake && <p class="muted small">Your screen may dim while you listen. Marks are saved either way; tap once to wake it.</p>}
+      {!awake && <p class="muted small">Your screen may dim while you listen. Marks are saved either way.</p>}
 
       {recent.length > 0 && (
         <section class="card">
